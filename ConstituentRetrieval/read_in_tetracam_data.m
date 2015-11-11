@@ -1,8 +1,7 @@
 % Victoria Scholl - Tetracam Imagery - Team Water
 % 11/9/15
 
-% This script reads in 16bit TIF tetracam image data,
-% 
+% This script reads in 16bit TIF tetracam image data
 
 %% declare font size variable for plot labels
 fs = 14;
@@ -26,7 +25,7 @@ i = im(:,:,2);
 imScaled = uint8(round(double(i)./double(max((max(max(i)))))*255));
 imshow(imScaled)
 
-%% NEED TO CONVERT DC TO REFLECTANCE using ELM
+%% read in and display image containing calibration targets
 
 figure;
 set(gcf, 'Name', 'Frame with Calibration Targets')
@@ -64,6 +63,8 @@ figure; set(gcf, 'Name', 'Click in upper left corner of BLACK panel. Next, click
 close(gcf);
 
 %% round decimal values to be integers representing pixel indices
+%  for two panel subsets based on the ROI's 
+
 xGray = round(xGray);
 yGray = round(yGray);
 xBlack = round(xBlack);
@@ -85,6 +86,7 @@ title('Black Calibration Target Selected Area','FontSize',fs)
 
 % index into the calibration target image and take the average
 % to yield a 6-point spectra for each target
+
 grayPanel_6 = calIm(yGray(1):yGray(2),xGray(1):xGray(2),:);
 blackPanel_6 = calIm(yBlack(1):yBlack(2),xBlack(1):xBlack(2),:);
 
@@ -115,6 +117,7 @@ plot(grayWavelengths,graySpectraSVC,'k')
 title('SVC Reflectance Spectra for Water Calibration Targets','FontSize',fs)
 ylabel('Reflectance [%]','FontSize',fs)
 xlabel('Wavelength [nm]','FontSize',fs)
+xlim([400 1000])
 
 % plot vertical lines indicating where each filter center lies
 plot([490 490],[0 20],'b')
@@ -127,3 +130,7 @@ plot([900 900],[0 20],'y')
 
 legend('Target: Black ~0%', 'Target: Gray ~16%','Filter: 490',...
        'Filter: 550','Filter: 680', 'Filter: 720','Filter: 800', 'Filter: 900')
+   
+%% Next - ELM 
+
+% Interpolate to create 1D LUT for each channel? 
