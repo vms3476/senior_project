@@ -6,6 +6,9 @@
 %% declare font size variable for plot labels
 fs = 14;
 
+% declare list of filter center wavelengths
+filterCenters = [490 550 680 720 800 900];
+
 %% image directory
 imDir = '../ConesusLake20151023_b/';
 
@@ -90,7 +93,6 @@ title('Black Calibration Target Selected Area','FontSize',fs)
 grayPanel_6 = calIm(yGray(1):yGray(2),xGray(1):xGray(2),:);
 blackPanel_6 = calIm(yBlack(1):yBlack(2),xBlack(1):xBlack(2),:);
 
-filterCenters = [490 550 680 720 800 900];
 subplot(2,2,3);
 grayDCAvgSpectra = reshape(mean(mean(grayPanel_6)),1,6);
 plot(filterCenters,grayDCAvgSpectra)
@@ -120,17 +122,88 @@ xlabel('Wavelength [nm]','FontSize',fs)
 xlim([400 1000])
 
 % plot vertical lines indicating where each filter center lies
-plot([490 490],[0 20],'b')
-plot([550 550],[0 20],'g')
-plot([680 680],[0 20],'r')
-plot([720 720],[0 20],'c')
-plot([800 800],[0 20],'m')
-plot([900 900],[0 20],'y')
+plot([filterCenters(1) filterCenters(1)],[0 20],'b')
+plot([filterCenters(2) filterCenters(2)],[0 20],'g')
+plot([filterCenters(3) filterCenters(3)],[0 20],'r')
+plot([filterCenters(4) filterCenters(4)],[0 20],'c')
+plot([filterCenters(5) filterCenters(5)],[0 20],'m')
+plot([filterCenters(6) filterCenters(6)],[0 20],'y')
 
 
+% label each curve as a panel or filter 
 legend('Target: Black ~0%', 'Target: Gray ~16%','Filter: 490',...
        'Filter: 550','Filter: 680', 'Filter: 720','Filter: 800', 'Filter: 900')
    
-%% Next - ELM 
+%% ELM 
 
-% Interpolate to create 1D LUT for each channel? 
+% sample the panel reflectance curves to the filter center values
+blackSpectraSVCSampled = zeros(1,6);
+graySpectraSVCSampled = zeros(1,6);
+for w = 1:6
+    [x b_index] = min(abs(round(blackWavelengths)-filterCenters(w)))
+    blackSpectraSVCSampled(1,w) = blackSpectraSVC(b_index);
+    
+    [x g_index] = min(abs(round(grayWavelengths)-filterCenters(w)))
+    graySpectraSVCSampled(1,w) = graySpectraSVC(g_index);
+end
+
+figure; hold on;
+scatter(filterCenters, blackSpectraSVCSampled)
+scatter(filterCenters, graySpectraSVCSampled)
+title('Sampled Panel Reflectances to Filter Centers','FontSize',fs)
+xlabel('Wavelength [nm]','FontSize',fs)
+ylabel('Reflectance [%]','FontSize',fs)
+
+
+%% Interpolate to create 1D LUT for each channel? 
+
+% Create 1D LUT for each filter 
+% input is 16bit CV 
+x_in = 1:1:2^16;
+y_out = zeros(6,2^16);
+
+slopes = zeros(1,6);
+y_intercepts = zeros(1,6);
+
+figure; hold on;
+colors = ['r' 'g' 'b' 'k' 'm' 'c'];
+for w = 1:6
+x1 = blackDCAvgSpectra(w);
+x2 = grayDCAvgSpectra(w);
+y1 = blackSpectraSVCSampled(w);
+y2 = graySpectraSVCSampled(w);
+slopes(w) = (y2-y1)/(x2-x1);
+y_intercepts(w) = y1 - m*x1;
+y_out(w,:) = x_in * slopes(w) - y_intercepts(1);
+
+% apply equation to all possible 16bit CV to yield reflectance LUT
+plot(x_in, y_out(w,:),colors(w))
+end
+legend('Filter: 490','Filter: 550','Filter: 680', 'Filter: 720','Filter: 800', 'Filter: 900')
+
+
+%% Using GPS information, be able to select 2 adjacent images 
+
+[filenames, lat, long, alt] = textread([imDir 'gps.txt'], '%s %f %f %f','delimiter', ',');
+figure; hold on;
+scatter(lat,long,'r.')
+title('Camera Center Locations','FontSize',fs)
+xlabel('Latitude','FontSize',fs)
+ylabel('Longitude','FontSize',fs)
+
+
+%% constituent retrieval 
+
+% gather spectral readings and cosntituent levels
+% Ryan create LUT? 
+% never sampled at Conesus before.
+% long pond LUT should be the same. same watershed for years. been
+% measuring IOPs of water
+% for long pond, set a threshold to ignore the glint pixels before doing
+% constituent analysis
+% when creating constituent maps, leave glint pixels as zero. 
+% glint avoidance in the future - minimize through TOD choice. 
+% nothing we can do about glint and mosaic right now. Need to purchase IMU.
+% Mosaic - since we may end up down-sampling resolution for comparison to
+% Landsat, it might be ok to do a rough projection 
+
