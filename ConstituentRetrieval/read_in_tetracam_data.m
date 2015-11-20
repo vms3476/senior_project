@@ -198,8 +198,8 @@ ylabel('Reflectance [%]','FontSize',fs)
 %% Interpolate to create 1D LUT for each channel? 
 
 % Create 1D LUT for each filter 
-% input is 16bit CV 
-x_in = 1:1:2^16;
+% input is 16bit CV, output is reflectance (0-100%) 
+x_in = 0:1:2^16-1;
 y_out = zeros(6,2^16);
 
 slopes = zeros(1,6);
@@ -213,13 +213,54 @@ x2 = grayDCAvgSpectra(w);
 y1 = blackSpectraSVCSampled(w);
 y2 = graySpectraSVCSampled(w);
 slopes(w) = (y2-y1)/(x2-x1);
-y_intercepts(w) = y1 - m*x1;
+y_intercepts(w) = y1 - slopes(w)*x1;
 y_out(w,:) = x_in * slopes(w) - y_intercepts(1);
 
 % apply equation to all possible 16bit CV to yield reflectance LUT
 plot(x_in, y_out(w,:),colors(w))
 end
 legend('Filter: 490','Filter: 550','Filter: 680', 'Filter: 720','Filter: 800', 'Filter: 900')
+title('1D LUT per channel, DC to reflectance')
+xlabel('16bit CV')
+ylabel('Reflectance %')
+
+%% Calibrate image to reflectance! 
+
+% number of pixels in single image 
+N = numel(im(:,:,1));
+imRefl = zeros(6,N); % create empty array to fill 
+
+for w = 1:6 % loop through bands since each has different LUT 
+    imRefl(w,:) = interp1(x_in, y_out(w,:),reshape(double(im(:,:,w)),1,N));
+    
+end 
+
+imRefl = reshape(imRefl,size(im));
+
+% plotting a single pixel reflectance spectra
+figure; hold on;
+plot(1:6, reshape(imRefl(100,150,:),1,6))
+
+%% plotting reflectance profiles of all pixels within a subset 
+
+figure; 
+pixSubset = imRefl(200:300,100:200,:);
+n = numel(pixSubset(:,:,1));
+pixSubset = reshape(pixSubset,n,6);
+x_values = repmat(1:6,n,1);
+plot(1:6,pixSubset) 
+xlabel('Band')
+ylabel('Reflectance, %')
+title('Spectral Reflectance of Pixels within Subset Area')
+
+
+
+
+
+
+
+
+
 
 
 %% Using GPS information, be able to select 2 adjacent images 
@@ -231,6 +272,7 @@ title('Camera Center Locations','FontSize',fs)
 xlabel('Latitude','FontSize',fs)
 ylabel('Longitude','FontSize',fs)
 
+% how to take input from plot and mosaic selected images? 
 
 %% constituent retrieval 
 
