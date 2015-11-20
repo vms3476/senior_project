@@ -3,30 +3,73 @@
 
 % This script reads in 16bit TIF tetracam image data
 
+%% set image directory - Conesus
+imDir = '../ConesusLake20151023_b'; % on local
+imDir = '../../20151023_b/forPhotoScanPro/'; % on server
+
+% images with panels
+calDir = ['../ConesusLake20151023_b/cal_target_images/'];
+calFilename = 'TTC03570_16.TIF';
+
+%% set image directory - Long Pond
+imDir = '../LongPond20151103_b/'; % on local
+imDir = '../../20151103_b/forPhotoScanPro/'; % on server
+
+% images with panels
+calDir = ['../LongPond20151103_b/cal_target_images/'];
+calFilename = 'TTC04534_16.TIF';
+
 %% declare font size variable for plot labels
 fs = 14;
 
 % declare list of filter center wavelengths
 filterCenters = [490 550 680 720 800 900];
 
-%% image directory
-imDir = '../ConesusLake20151023_b/';
-
-% get filenames of all images in directory
+%% get filenames of all images in directory
 imFilenames = dir([imDir '*.TIF']);
 
 % determine the number of images with specified extension
 numberOfImages = size(imFilenames,1);
 
-% read in 16-bit tif. 6 bands. order: B G R NIR1 NIR2 NIR3
-im = imread([imDir imFilenames.name]);
+% loop through images in directory and display them
+j1 = 300; % starting index of image 
 
-% declare subset
-i = im(:,:,2);
+for j = j1:numberOfImages
+    w = waitforbuttonpress;
+    if w == 0 
+        disp('Click to proceed')
+    else 
+        % read in 16-bit tif. 6 bands. order: B G R NIR1 NIR2 NIR3
+        % im = imread([imDir imFilenames.name]);
+        im = imread([imDir imFilenames(j).name]);
 
-% display 8-bit scaled version
-imScaled = uint8(round(double(i)./double(max((max(max(i)))))*255));
-imshow(imScaled)
+        % declare vis subset for viewing 
+        i = im(:,:,1:3);
+
+        % display 8-bit scaled version
+%         i = double(i);   
+%         rScaled = uint8(i(:,:,3)./(max(max(i(:,:,3))))*255);
+%         gScaled = uint8(i(:,:,2)./(max(max(i(:,:,2))))*255);
+%         bScaled = uint8(i(:,:,1)./(max(max(i(:,:,1))))*255);
+        
+        imScaled = uint8(round(double(i))./double(max((max(max(i)))))*255);
+        rScaled = imScaled(:,:,3);
+        gScaled = imScaled(:,:,2);
+        bScaled = imScaled(:,:,1);
+        rgbScaled = cat(3,rScaled,gScaled,bScaled);
+        imshow(rgbScaled)
+        set(gcf, 'Name', ['j = ', num2str(j)])
+
+    end
+end
+
+%% Remove glint
+
+% remove glint through thresholding?
+band = 2;
+thresh = max(max(im(:,:,band))) - 0.05 * max(max(im(:,:,band)));
+
+im = im(im<thresh);
 
 %% read in and display image containing calibration targets
 
@@ -34,15 +77,12 @@ figure;
 set(gcf, 'Name', 'Frame with Calibration Targets')
 
 % read in image containing cal targets 
-calDir = [imDir 'cal_target_images/'];
-calFilename = 'TTC03570_16.TIF';
 calIm = imread([calDir calFilename]);
 
 % isolate a single band
 i = calIm(:,:,1:3);
 
 % display 8-bit scaled version
-imScaled = uint8(round(double(i)./double(max((max(max(i)))))*255));
 imScaled = uint8(round(double(calIm)./double(max((max(max(calIm)))))*255));
 
 rScaled = imScaled(:,:,3);
