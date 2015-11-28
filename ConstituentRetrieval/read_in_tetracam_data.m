@@ -1,19 +1,27 @@
 % Victoria Scholl - Tetracam Imagery - Team Water
 % 11/9/15
 
-% This script reads in 16bit TIF tetracam image data
+% This script reads in 16bit TIF tetracam image data for the specified
+% directory. For an image containing calibration targets, the user can
+% select ROIs to subset panel pixels for ELM calibration. 
+% 16bit code values are converted to reflectance. 
+
+% Navigate to the senior_project/ConstituentRetrieval/ directory
 
 %% set image directory - Conesus
-imDir = '../ConesusLake20151023_b'; % on local
 imDir = '../../20151023_b/forPhotoScanPro/'; % on server
+imDir = '../ConesusLake20151023_b/'; % on local
+testImFilename = 'TTC03497_16.TIF';
 
 % images with panels
 calDir = ['../ConesusLake20151023_b/cal_target_images/'];
 calFilename = 'TTC03570_16.TIF';
 
 %% set image directory - Long Pond
-imDir = '../LongPond20151103_b/'; % on local
+
 imDir = '../../20151103_b/forPhotoScanPro/'; % on server
+imDir = '../LongPond20151103_b/'; % on local
+testImFilename = 'TTC04161_16.TIF'; 
 
 % images with panels
 calDir = ['../LongPond20151103_b/cal_target_images/'];
@@ -32,8 +40,9 @@ imFilenames = dir([imDir '*.TIF']);
 numberOfImages = size(imFilenames,1);
 
 % loop through images in directory and display them
-j1 = 300; % starting index of image 
+j1 = 1; % starting index of image 
 
+figure;
 for j = j1:numberOfImages
     w = waitforbuttonpress;
     if w == 0 
@@ -45,12 +54,6 @@ for j = j1:numberOfImages
 
         % declare vis subset for viewing 
         i = im(:,:,1:3);
-
-        % display 8-bit scaled version
-%         i = double(i);   
-%         rScaled = uint8(i(:,:,3)./(max(max(i(:,:,3))))*255);
-%         gScaled = uint8(i(:,:,2)./(max(max(i(:,:,2))))*255);
-%         bScaled = uint8(i(:,:,1)./(max(max(i(:,:,1))))*255);
         
         imScaled = uint8(round(double(i))./double(max((max(max(i)))))*255);
         rScaled = imScaled(:,:,3);
@@ -105,9 +108,17 @@ figure; set(gcf, 'Name', 'Click in upper left corner of BLACK panel. Next, click
 [darkTargetMask xBlack yBlack] = roipoly(rgbScaled);
 close(gcf);
 
-%% round decimal values to be integers representing pixel indices
-%  for two panel subsets based on the ROI's 
+%% OR read in previously selected ROI coordinates 
 
+load([calDir 'yBlack.mat'])
+load([calDir 'yGray.mat'])
+load([calDir 'xBlack.mat'])
+load([calDir 'xGray.mat'])
+
+%% Show panel subsets and plot spectral CV data
+
+% round decimal values to be integers representing pixel indices 
+% for two panel subsets based on the ROI's 
 xGray = round(xGray);
 yGray = round(yGray);
 xBlack = round(xBlack);
@@ -195,7 +206,7 @@ xlabel('Wavelength [nm]','FontSize',fs)
 ylabel('Reflectance [%]','FontSize',fs)
 
 
-%% Interpolate to create 1D LUT for each channel? 
+%% Interpolate to create 1D LUT for each channel
 
 % Create 1D LUT for each filter 
 % input is 16bit CV, output is reflectance (0-100%) 
@@ -223,6 +234,28 @@ legend('Filter: 490','Filter: 550','Filter: 680', 'Filter: 720','Filter: 800', '
 title('1D LUT per channel, DC to reflectance')
 xlabel('16bit CV')
 ylabel('Reflectance %')
+
+
+%% Read in test image 
+testIm = imread([imDir testImFilename]);
+
+% scale RGB bands for viewing 
+i = testIm(:,:,1:3);
+testImScaled = uint8(round(double(i)./double(max((max(max(i)))))*255));
+rScaled = testImScaled(:,:,3);
+gScaled = testImScaled(:,:,2);
+bScaled = testImScaled(:,:,1);
+testRGBScaled = cat(3,rScaled,gScaled,bScaled);
+imshow(testRGBScaled);
+
+% % select image subset 
+% figure; set(gcf, 'Name', 'Click in upper left corner of subset. Next, click lower right of seubset to create a diagonal line. Double click either point to continue.');
+% [subsetMask xSubset ySubset] = roipoly(testRGBScaled);
+% close(gcf);
+
+% read in subset selected using ENVI 
+subsetTestIm = imread([imDir 'subset_' testImFilename]);
+
 
 %% Calibrate image to reflectance! 
 
