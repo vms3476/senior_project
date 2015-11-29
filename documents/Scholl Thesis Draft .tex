@@ -1,0 +1,98 @@
+% Document class choices are: article, report, letter, book, slide {squigglies}
+	% Define font size (11pt, 12pt), paper size (letterpaper, legal paper,landscape), number of sides (oneside, twoside) and columns 
+
+\documentclass[12pt, letterpaper, oneside, onecolumn]{article}
+
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+
+
+\title{Unmanned Aerial Vehicle Imaging System Creation
+for Water Quality Analysis}
+\author{Victoria Scholl \\ 
+\vspace{0.5cm}
+Senior Thesis Document Draft, Fall 2015 \\ 
+Advisor: Dr. Aaron Gerace \\ 
+Digital Imaging and Remote Sensing Laboratory \\ 
+Rochester Institute of Technology}
+\maketitle
+
+\begin{abstract}
+The proposed project involves purchasing a multispectral six-camera system with spectral bands ideal for water quality analysis, mounting it onto a UAS, producing a calibration protocol, and using the system to generate in-water constituent maps in near-real time. This imaging system can also be adapted for other remote sensing applications and will be a valuable addition to the Digital Imaging and Remote Sensing (DIRS) laboratory at the Chester F. Carlson Center for Imaging Science.
+\end{abstract}
+
+% Sections are commands - not environments. 
+\section{Introduction}
+
+\subsection{Water Quality}
+The U.S. Environmental Protection Agency (EPA) protects human health and the environment through the development and enforcement of regulations and environmental laws. It studies and measures the state of environmental features and provides this information to the public for education, awareness, and support of fish and wildlife. Under the Clean Water Act, lists of impaired waters must be developed to identify waters that are too polluted to meet the water quality standards set by their states[1]. The Rochester Embayment, primarily consisting of the region near where the Genesee River flows into the Lake Ontario Central Basin, is on the EPA’s impaired water list. Traditional remote sensing platforms have been used to monitor its water quality, but each has its serious limitations.
+
+[insert info about the constituents of interest]
+
+\subsection{Remote Sensing Systems}
+
+Temporal, spectral, and spatial aspects of image collection are difficult tradeoffs. The NASA Jet Propulsion Lab Airborne Visible InfraRed Imaging Spectrometer (AVIRIS) instrument gathers hyperspectral image data on a Twin Otter aircraft using 224 contiguous spectral bands spanning the 400 to 2500nm wavelength range [2]. In 1999, AVIRIS was used to image the Rochester Embayment area with impressive spectral resolution. Unfortunately, as an airborne platform used to only collect this data once, it is not practical for long term monitoring. Conversely, the NASA Landsat 8 satellite is a spaceborne platform launched in 2013 that images the entire Earth every 16 days. This makes Landsat 8 attractive for monitoring ecological change regularly over time. However, its multispectral band combination is not ideal for water quality analysis. The presence of atmosphere and clouds during collection is an issue because it influences the measured signal and calculated water parameters, leading to possible misinterpretations or misleading conclusions. Only two cloud-free scenes have been obtained of the Rochester Embayment since Landsat 8 achieved orbit. In addition, the spatial resolution of a system orbiting at such a high altitude is limited to 30m pixels. This low resolution limits the ability to assess finer constituent fluctuation within a body of water, which may be important for some applications. 
+
+\subsection{UAV Systems}
+A newer, alternative type of system which can overcome these limitations is on the horizon. Unmanned Aerial Systems (UASs) are aircraft systems that are flown remotely through pilot control or autonomously through the use of computers. The Northeast UAS Airspace Integration Research (NUAIR) Alliance operates and oversees UAS test ranges with the ultimate goal of safely integrating UASs into commercial airspace. RIT is one of their partners and has been designated as one of the primary UAS research and development academic institutions in New York to further advancements with this technology [3].  
+
+Considering models that are reasonably priced, capable of carrying 3+ pounds, and feature onboard GPS for geo-referencing purposes, this technology has advanced to a point where it is attractive for endeavors within the scientific community. This work proposes to create a UAS-based imaging system for remote sensing applications. More specifically, a 6-band multispectral camera will be used to image bodies of water such as those within the Rochester Embayment area to monitor their constituent levels. The UAS’s low flight altitude reduces the issues introduced by imaging through large amounts of atmosphere from space, and the ability to select a custom combination and range of filters for each of the 6 cameras will allow the system to have an ideal spectral sensitivity for water quality analysis. Data collection will no longer be limited by an orbit, pilot availability, of the presence of clouds.
+
+
+
+\subsection{Data Collection}
+
+Tetracam specs 
+Location information: Long Pond, Conesus Lake 
+Dates and times of collects 
+Describe difficulties (or does this not go in this section?) 
+
+\subsection{Constituent Retrieval Workflow}
+
+Describe procedure and code Aaron gave me (reference his / Javier's paper(s)? ) 
+
+ELM calibration 
+
+
+
+\subsection{Characterization and Calibration of Camera System}
+
+Why do we need to characterize the system (determine the actual spectral sensitivity of the filters 
+
+
+\subsection{References}
+
+
+\subsection{Extra LATEX stuff}
+
+% [\cite{Scholl_01}]. 
+
+% Make a new environment called bibliograhy at end of doc. Reference page made automatically from reference.bib file. 
+
+
+% UNFINISHED 
+%\begin{thebibliography}
+%	\bibitem{Scholl_01} Scholl, V. M., and Dang, D. X.
+%\end{thebibliography}
+
+
+
+% Equations must be surrouned by $. Intuitive names for characters. This is an example as an inline equation (meant to exist seamlessly in a line of text)
+
+Equations can be placed in-line: $\Sigma_{\alpha\beta}$
+
+OR they can stand alone. 
+
+% Stand along equation 
+\begin{equation} \label{line equation}
+	y = mx + b
+\end{equation}
+
+Referencing equations can be done by pointing. For instance, the line equation is shown in Eq. \ref{line equation}
+
+\end{document}
+
+
+
+

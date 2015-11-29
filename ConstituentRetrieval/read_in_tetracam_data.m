@@ -209,7 +209,8 @@ ylabel('Reflectance [%]','FontSize',fs)
 %% Interpolate to create 1D LUT for each channel
 
 % Create 1D LUT for each filter 
-% input is 16bit CV, output is reflectance (0-100%) 
+% input, x_in, is 16bit CV
+% output, y_out, is reflectance (0-100%) 
 x_in = 0:1:2^16-1;
 y_out = zeros(6,2^16);
 
@@ -236,7 +237,8 @@ xlabel('16bit CV')
 ylabel('Reflectance %')
 
 
-%% Read in test image 
+%% Read in test image, select a subset to analyze 
+
 testIm = imread([imDir testImFilename]);
 
 % scale RGB bands for viewing 
@@ -248,47 +250,31 @@ bScaled = testImScaled(:,:,1);
 testRGBScaled = cat(3,rScaled,gScaled,bScaled);
 imshow(testRGBScaled);
 
-% % select image subset 
-% figure; set(gcf, 'Name', 'Click in upper left corner of subset. Next, click lower right of seubset to create a diagonal line. Double click either point to continue.');
-% [subsetMask xSubset ySubset] = roipoly(testRGBScaled);
-% close(gcf);
+% select image subset 
+figure; set(gcf, 'Name', 'Click in upper left corner of subset. Next, click lower right of seubset to create a diagonal line. Double click either point to continue.');
+[subsetMask xSubset ySubset] = roipoly(testRGBScaled);
+close(gcf);
 
-% read in subset selected using ENVI 
-subsetTestIm = imread([imDir 'subset_' testImFilename]);
+%% Plot spectral reflectance of subset pixels 
 
+% show the subset 
+subsetTestIm = testIm(ySubset(1):ySubset(2),xSubset(1):xSubset(2),:);
+imshow(subsetTestIm(:,:,1:3)) 
 
-%% Calibrate image to reflectance! 
+%% calibrate to reflectance 
+subsetTestImRefl = calibrate_elm(x_in,y_out,subsetTestIm);
 
-% number of pixels in single image 
-N = numel(im(:,:,1));
-imRefl = zeros(6,N); % create empty array to fill 
-
-for w = 1:6 % loop through bands since each has different LUT 
-    imRefl(w,:) = interp1(x_in, y_out(w,:),reshape(double(im(:,:,w)),1,N));
-    
-end 
-
-imRefl = reshape(imRefl,size(im));
-
-% plotting a single pixel reflectance spectra
+% plot spectral curves of pixels in subset 
 figure; hold on;
-plot(1:6, reshape(imRefl(100,150,:),1,6))
-
-%% plotting reflectance profiles of all pixels within a subset 
-
-figure; 
-pixSubset = imRefl(200:300,100:200,:);
-n = numel(pixSubset(:,:,1));
-pixSubset = reshape(pixSubset,n,6);
-x_values = repmat(1:6,n,1);
-plot(1:6,pixSubset) 
-xlabel('Band')
-ylabel('Reflectance, %')
-title('Spectral Reflectance of Pixels within Subset Area')
-
-
-
-
+r = size(subsetTestImRefl,1);
+c = size(subsetTestImRefl,2);
+subsetTestImReflVector = reshape(subsetTestImRefl,r*c,6);
+for j = 1:r*c
+    plot(1:6,subsetTestImReflVector(j,:));
+end 
+title('Reflectance spectra for pixels within subset area','FontSize',fs)
+xlabel('Wavelength [nm]','FontSize',fs)
+ylabel('Reflectance [%]','FontSize',fs)
 
 
 
@@ -321,4 +307,6 @@ ylabel('Longitude','FontSize',fs)
 % nothing we can do about glint and mosaic right now. Need to purchase IMU.
 % Mosaic - since we may end up down-sampling resolution for comparison to
 % Landsat, it might be ok to do a rough projection 
+
+
 
